@@ -1,0 +1,44 @@
+name: Build Legendary Max AI APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "LegendaryMaxAI_Android_Project.zip"
+      - ".github/workflows/build-apk.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract project
+        run: |
+          mkdir extracted
+          unzip -q LegendaryMaxAI_Android_Project.zip -d extracted
+          find extracted -maxdepth 3 -type f | head -50
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: "8.7"
+
+      - name: Build APK
+        run: |
+          gradle -p extracted/LegendaryMaxAI :app:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Legendary-Max-AI-APK
+          path: extracted/LegendaryMaxAI/app/build/outputs/apk/debug/app-debug.apk
+          
